@@ -17,7 +17,7 @@ jobs:
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
       with:
-        version: '>= 363.0.0'
+        version: '423.0.0'
 
     - name: Get available Go versions
       run: |
@@ -41,8 +41,8 @@ jobs:
         # Remove the last comma and space
         versions_str=${versions_str%, *}
 
-        sed -i "s/^        go-version: \[.*/        go-version: \[$versions_str\]/" .github/workflows/ci-v2.yaml
-        
+        sed -i "0,/^        go-version: \[.*/s//        go-version: \[$versions_str\]/" .github/workflows/ci-v2.yaml
+  
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v4
       with:
