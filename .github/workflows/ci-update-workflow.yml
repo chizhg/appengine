@@ -21,7 +21,7 @@ jobs:
 
     - name: Get available Go versions
       run: |
-        versions=$(gcloud functions runtimes list --format="value(NAME)" --project=test-asm-chizhg --region=us-west1 | grep ^go)
+        versions=$(gcloud functions runtimes list --format="value(NAME)" --project=test-asm-chizhg --region=us-west1 | grep ^go | tr '\n' ' ' | xargs)
         echo "::set-output name=versions::$versions"
       id: get_versions
 
@@ -30,7 +30,11 @@ jobs:
 
     - name: Update Go versions
       run: |
-        versions=($(echo "${{ steps.get_versions.outputs.versions }}" | tr ' ' '\n'))
+        export ACTIONS_STEP_DEBUG=true
+        
+        readarray -d ' ' -t versions <<< "${{ steps.get_versions.outputs.versions }}"
+        
+        echo "### versions: ${versions}"
 
         versions_str=""
         for version in "${versions[@]}"; do
@@ -40,6 +44,8 @@ jobs:
         done
         # Remove the last comma and space
         versions_str=${versions_str%, *}
+
+        echo "### versions_str: ${versions_str}"
 
         # Only replace the first occurance
         sed -i "0,/^        go-version: \[.*/s//        go-version: \[$versions_str\]/" .github/workflows/ci-v2.yaml
